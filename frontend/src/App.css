@@ -1,4 +1,14 @@
 /* Navbar container */
+*{
+  padding: 0;
+  margin : 0;
+  box-sizing: border-box;
+}
+.body{
+  height : 100%;
+  width: 100%;
+
+}
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -7,8 +17,10 @@
   background-color: #ff6f3c;
   color: white;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  position: sticky;
+  position: fixed;
   top: 0;
+  left : 0;
+  width: 100%;
   z-index: 1000;
 }
 
