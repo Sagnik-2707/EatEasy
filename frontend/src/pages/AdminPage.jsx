@@ -1,6 +1,6 @@
 import React from 'react'
 import '../AdminPage.css';
-
+import Button from '@mui/material/Button';
 
 function AdminPage({orders}) {
     console.log(orders);
@@ -8,7 +8,6 @@ function AdminPage({orders}) {
     <div className="admin-page">
         <h1>All Orders</h1>
         <br/> <br/>
-      
     
           
       
