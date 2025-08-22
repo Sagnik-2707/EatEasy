@@ -214,3 +214,10 @@ body{
   background: #e74c3c;
   color: white;
 }
+
+
+.css-1bn13uf-MuiDrawer-docked .MuiDrawer-paper {
+    box-sizing: border-box;
+    width: 240px;
+    position: static;
+}
