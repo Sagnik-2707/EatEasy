@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-
+import Navbar from '../components/Navbar';
 import '../App.css';
 function UserPage({addOrder}) {
     const menu = [
@@ -134,6 +134,8 @@ function UserPage({addOrder}) {
     handleClose();
   }
   return (
+    <>
+    <Navbar/>
     <div className="menu-grid">
         {menu.map((item) => (
             <div key={item.id} className="menu-card">
@@ -186,6 +188,7 @@ function UserPage({addOrder}) {
         )}
         
     </div>
+    </>
   );
 }
 
