@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import "../App.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import AdminPage from "../pages/AdminPage";
+
 function Navbar() {
   const[menu, setMenu] = useState([]);
   const[showDropdown, setShowDropdown] = useState(false);
@@ -15,10 +15,12 @@ function Navbar() {
   }, []);
   return (
     <nav className="navbar">
-      <div className="logo">🍔 EatEasy</div>
+      <div className="logo" onClick={() => window.scrollTo({top:0, behavior: "smooth"})}>🍔 EatEasy</div>
       
       <ul className="nav-links">
-        <li><a href="#home">Home</a></li>
+        <li>
+          <Link to='./'>Home</Link>
+        </li>
         <li><a href="#menu">Menu</a></li>
         <li><a href="#offers">Offers</a></li>
         <li><a href="#contact">Contact</a></li>
