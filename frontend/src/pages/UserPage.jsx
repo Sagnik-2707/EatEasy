@@ -8,13 +8,13 @@ function UserPage({addOrder}) {
       name: "Cheese Burger",
       price: 199,
       image:
-        "cheeseburger.jpg",
+        "/cheeseburger.jpg",
     },
     {
       id: 2,
       name: "Margherita Pizza",
       price: 299,
-      image: "pizza.jpg"
+      image: "/pizza.jpg"
         
     },
     {
@@ -22,87 +22,87 @@ function UserPage({addOrder}) {
       name: "Pasta Alfredo",
       price: 249,
       image:
-        "pasta.jpg",
+        "/pasta.jpg",
     },
     {
       id: 4,
       name: "French Fries",
       price: 99,
       image:
-        "frenchfry.jpg",
+        "/frenchfry.jpg",
     },
     {
         id: 5,
         name: "Chicken Biriyani",
         price: 199,
-        image: "ChickenBiriyani.jpg"
+        image: "/ChickenBiriyani.jpg"
 
     },
     {
         id: 6,
         name: "Mutton Biriyani",
         price: 349,
-        image: "MuttonBiriyani.jpg"
+        image: "/MuttonBiriyani.jpg"
     },
     {
         id: 7,
         name: "Steamed Chicken Momo",
         price: 109,
-        image: "steamed_chicken_momo.jpeg"
+        image: "/steamed_chicken_momo.jpeg"
     },
     {
         id: 8,
         name: "Chicken Sandwich",
         price: 99,
-        image: "chicken_sandwich.jpg"
+        image: "/chicken_sandwich.jpg"
     },
     {
         id: 9,
         name: "Mixed Fried Rice",
         price: 99,
-        image: "mixed-fried-rice.jpg"
+        image: "/mixed-fried-rice.jpg"
     },
     {
         id: 10,
         name: "Veg Roll",
         price: 39,
-        image: "veg-roll.jpg"
+        image: "/veg-roll.jpg"
     },
     {
         id: 11,
         name: "Chicken Kabab",
         price: 149,
-        image: "Chicken-Kabab.jpg"
+        image: "/Chicken-Kabab.jpg"
     },
     {
         id: 12,
         name: "Chilli Fish",
         price: 199,
-        image: "Chilli-Fish.jpg"
+        image: "/Chilli-Fish.jpg"
     },
     {
         id: 13,
         name: "Masala Dosa",
         price: 49,
-        image: "masala-dosa.jpg"
+        image: "/masala-dosa.jpg"
     },
     {
         id: 14,
         name: "Chicken Tandoori",
         price: 149,
-        image: "Tandoori-Chicken.jpg"
+        image: "/Tandoori-Chicken.jpg"
     },
     {
         id: 15,
         name: "Chicken Hakka Noodles",
         price: 149,
-        image: "chicken-hakka-noodles.jpg"
+        image: "/chicken-hakka-noodles.jpg"
     },
     {
         id: 16,
         name: "Chicken Popcorn",
         price: 99,
-        image: "chicken_popcorn.jpg"
+        image: "/chicken_popcorn.jpg"
     }
   ];
   const[selectedItem, setSelectedItem] = useState(null);

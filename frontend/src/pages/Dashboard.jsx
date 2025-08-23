@@ -13,6 +13,7 @@ function Dashboard({orders}) {
             <p>No Orders Yet</p>
         ):(
                 orders.map((order, index) => {
+                  console.log("Order image", orders.image);
                     return(
                      <div key={index} className="order-item">
                         <div className="order-info">
