@@ -23,18 +23,13 @@ import Menu from "./Menu";
 
 const drawerWidth = 240;
 
-let url = window.location.href;
-
-console.log(url);
-
 function AdminPage(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
-  
+  const [mycomponent, setmyComponent] = useState("Dashboard");
 
 
-//    console.log(mycomponent, "fdsfdff😂")
   const handleDrawerClose = () => {
     setIsClosing(true);
     setMobileOpen(false);
@@ -51,15 +46,12 @@ function AdminPage(props) {
   };
 
   function handleLocation(elm) {
-    console.log(elm)
-    if (url === "http://localhost:5173/admin") {
+    if (elm === "Dashboard") {
       setmyComponent("Dashboard");
     } else {
       setmyComponent("Menu");
     }
   }
-
- 
 
   const drawer = (
     <div>
@@ -68,7 +60,7 @@ function AdminPage(props) {
       <List>
         {["Dashboard", "Menu"].map((text, index) => (
           <Link
-            to={text === "Dashboard" ? "/admin" : "/menu"}
+            to={text === "Dashboard" ? "/admin/dashboard" : text === "Menu" ? "/admin/menu" :"Nothing"}
             onClick={() => handleLocation(text)}
           >
             <ListItem key={text} disablePadding>
@@ -87,10 +79,6 @@ function AdminPage(props) {
 
   const container =
     window !== undefined ? () => window().document.body : undefined;
-    const [mycomponent, setmyComponent] = useState("Dashboard");
-
-    console.log(mycomponent)
-
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -153,8 +141,7 @@ function AdminPage(props) {
         }}
       >
         <Toolbar />
-        <Menu/>
-        
+        {mycomponent === "Dashboard" ? <Dashboard/> : <Menu/>}
       </Box>
     </Box>
   );

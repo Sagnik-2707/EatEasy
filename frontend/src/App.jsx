@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Banner from "./components/Banner";
 import UserPage from "./pages/UserPage";
 import AdminPage from "./pages/AdminPage";
@@ -19,6 +20,7 @@ function App() {
   };
   return (
     <>
+      <Navbar/>
       <Banner />
       <Routes>
         <Route path="/" element={<UserPage addOrder={addOrder} />} />

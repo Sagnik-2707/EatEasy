@@ -19,7 +19,7 @@ function Navbar() {
       
       <ul className="nav-links">
         <li>
-          <Link to='./'>Home</Link>
+          <Link to='/'>Home</Link>
         </li>
         <li><a href="#menu">Menu</a></li>
         <li><a href="#offers">Offers</a></li>

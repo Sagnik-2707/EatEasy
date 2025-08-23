@@ -135,7 +135,6 @@ function UserPage({addOrder}) {
   }
   return (
     <>
-    <Navbar/>
     <div className="menu-grid">
         {menu.map((item) => (
             <div key={item.id} className="menu-card">
