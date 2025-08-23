@@ -24,11 +24,8 @@ function App() {
       <Banner />
       <Routes>
         <Route path="/" element={<UserPage addOrder={addOrder} />} />
-        <Route path="/admin" element={<AdminPage orders={orders} />} />
-        {/* <Route
-          path="/admin/dashboard"
-          element={<Dashboard />}
-        /> */}
+        <Route path="/admin/dashboard" element={<AdminPage orders={orders} />} />
+        <Route path="/admin/menu" element={<AdminPage orders={orders} />} />
       </Routes>
     </>
   );

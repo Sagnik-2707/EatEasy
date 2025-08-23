@@ -27,7 +27,7 @@ function Navbar() {
       </ul>
 
       <div className="order-container">
-        <Link className="admin-btn" to='/admin'>Admin</Link>
+        <Link className="admin-btn" to='/admin/dashboard'>Admin</Link>
           
       </div>
     </nav>
