@@ -141,7 +141,7 @@ function AdminPage(props) {
         }}
       >
         <Toolbar />
-        {mycomponent === "Dashboard" ? <Dashboard/> : <Menu/>}
+        {mycomponent === "Dashboard" ? <Dashboard orders={props.orders}/> : <Menu/>}
       </Box>
     </Box>
   );
