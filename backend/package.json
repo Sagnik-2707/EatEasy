@@ -5,18 +5,24 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "author": "Sagnik",
   "license": "ISC",
   "keywords": [],
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.4",
     "express": "^5.1.0",
-    "mysql2": "^3.14.3"
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "mysql2": "^3.14.3",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.4"
   }
 }

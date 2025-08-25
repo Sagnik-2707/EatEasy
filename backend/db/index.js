@@ -1,18 +1,14 @@
-import mysql from "mysql2/promise";
-import { drizzle } from "drizzle-orm/mysql2";
-import * as schema from "./schema.js";
-import dotenv from "dotenv";
-dotenv.config();
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon,neonConfig  } from '@neondatabase/serverless';
 
-async function connectDB() {
-  const poolConnection = await mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-  });
+import ws from 'ws';
+neonConfig.webSocketConstructor = ws;
 
-  return drizzle(poolConnection, { schema });
-}
+const sql = neon(process.env.DATABASE_URL);
+export const db = drizzle({ client: sql });
 
-export const db = await connectDB();
+
+
+
+
