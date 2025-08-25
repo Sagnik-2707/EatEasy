@@ -1,39 +1,55 @@
-import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import { useState } from "react";
+import { Box, Typography, TextField, Button, Snackbar, Alert } from "@mui/material";
 
-const Menu= () => {
+const Menu = () => {
   const [formData, setFormData] = useState({
     menuName: "",
     price: "",
-    description: "",
-    date: "",
+    image: null, // store file object
+  });
+    const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success", // success | error | warning | info
   });
 
-  // Handle input change
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, image: e.target.files[0] });
+  };
+
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Menu Data Submitted:", formData);
 
-    // Here you can call API to save menu data
-    // axios.post("/api/menus", formData).then(...)
+    const data = new FormData();
+    data.append("menuName", formData.menuName);
+    data.append("price", formData.price);
+    if (formData.image) {
+      data.append("image", formData.image);
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/menus", {
+        method: "POST",
+        body: data,
+      });
+
+      if (res.ok) {
+        setToast({ open: true, message: "Menu added successfully!", severity: "success" });
+        setFormData({ menuName: "", price: "", image: null }); // reset form
+      } else {
+        setToast({ open: true, message: "Failed to add menu", severity: "error" });
+      }
+    } catch (error) {
+      console.error(error);
+      setToast({ open: true, message: "Something went wrong!", severity: "error" });
+    }
   };
-
   return (
+    <>
     <Box
       component="form"
       onSubmit={handleSubmit}
@@ -49,15 +65,14 @@ const Menu= () => {
         Add Menu
       </Typography>
 
-      {/* Menu Type */}
+      {/* Menu Name */}
       <TextField
         label="Menu Name"
-        name="menuName"
-        value={formData.menuType}
+        name="menuName"   // ✅ match backend
+        value={formData.menuName}
         onChange={handleChange}
         fullWidth
-      >
-      </TextField>
+      />
 
       {/* Price */}
       <TextField
@@ -69,35 +84,41 @@ const Menu= () => {
         fullWidth
       />
 
-      {/* Category */}
-
-      {/* Description */}
-      <TextField
-        label="Description"
-        name="description"
-        multiline
-        rows={3}
-        value={formData.description}
-        onChange={handleChange}
-        fullWidth
-      />
-
-      {/* Date */}
-      <TextField
-        label="Available From"
-        name="date"
-        type="date"
-        value={formData.date}
-        onChange={handleChange}
-        InputLabelProps={{ shrink: true }}
-        fullWidth
-      />
+      {/* Image Upload */}
+      <Button variant="contained" component="label">
+        Upload Image
+        <input
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={handleFileChange}
+        />
+      </Button>
+      {formData.image && (
+        <Typography variant="body2">{formData.image.name}</Typography>
+      )}
 
       {/* Submit Button */}
       <Button type="submit" variant="contained" color="primary">
         Submit
       </Button>
     </Box>
+    <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          severity={toast.severity}
+          onClose={() => setToast({ ...toast, open: false })}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

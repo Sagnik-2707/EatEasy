@@ -7,12 +7,12 @@ function Navbar() {
   const[menu, setMenu] = useState([]);
   const[showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    axios.get("http://localhost:5000/menu")
-    .then(res => setMenu(res.data))
-    .catch(err => console.error(err));
+  // useEffect(() => {
+  //   axios.get("http://localhost:5000/menu")
+  //   .then(res => setMenu(res.data))
+  //   .catch(err => console.error(err));
 
-  }, []);
+  // }, []);
   return (
     <nav className="navbar">
       <div className="logo" onClick={() => window.scrollTo({top:0, behavior: "smooth"})}>🍔 EatEasy</div>

@@ -52,6 +52,32 @@ body{
 .nav-links li a:hover {
   color: #ffe7d1;
 }
+.admin-btn {
+  display: inline-block;
+  text-decoration: none;
+  color: white;
+  background-color: #ff6f3c;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.admin-btn:hover {
+  background-color: #e65a2d; /* darker orange */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.admin-btn:active {
+  transform: translateY(0); /* reset when clicked */
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
 
 /* Order button */
 .order-btn {
