@@ -8,6 +8,7 @@ const upload = multer(); // stores file in memory
 
 
 router.get("/menus", async (req, res) => {
+  console.log("someones knocking")
   try{
     const items = await db.select().from(menuItems);
 
@@ -15,8 +16,8 @@ router.get("/menus", async (req, res) => {
       id:item.id, 
       name: item.name,
       price: item.price,
-      image: item.image ? `data:image/jpeg;base64,${item.image.toString("base64")}` : null
-
+      image: item.image ? `data:image/jpeg;base64,${item.image.toString("base64")}` : null,
+      status: item.status
     }));
   res.json(formatted);
 }
