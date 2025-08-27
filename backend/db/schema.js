@@ -31,3 +31,4 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }), // optional if using only email+name
   role: varchar("role", { length: 50 }).default("user")
 });
+
