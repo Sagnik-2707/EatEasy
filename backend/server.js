@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser"; 
 import menuRoutes from "./routes/menu.js";
 import authRoutes from "./routes/auth.js";
+import cartRoutes from "../backend/routes/cart.js"
 
 import { authMiddleware, roleMiddleware } from "./middleware/auth.js";
 
@@ -16,7 +17,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api", menuRoutes);
+
 app.use("/api/auth", authRoutes);
+app.use("/api", menuRoutes);
+app.use("/api/cart", cartRoutes);
+
 
 app.listen(5000, () => console.log("Server running at http://localhost:5000"));
