@@ -105,19 +105,34 @@ function UserPage({ addOrder }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newOrder = {
-      item: selectedItem.name,
-      price: selectedItem.price,
-      image: selectedItem.image,
-      ...formData,
-      time: new Date().toLocaleString(),
-    };
-    addOrder(newOrder);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const res = await axios.post(
+      "http://localhost:5000/api/cart/add",
+      {
+        menuItemId: selectedItem.id,
+        quantity: formData.quantity,
+        price: selectedItem.price
+      },
+      { withCredentials: true } 
+    );
+
     alert(`Order placed!\n\nItem: ${selectedItem.name}\nQuantity: ${formData.quantity}`);
+    addOrder(res.data.item); // update local state if needed
     handleClose();
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to place order. Please try again.");
+  }
+};
 
   return (
     <>
@@ -216,7 +231,7 @@ function UserPage({ addOrder }) {
         </div>
       )}
 
-      {/* ================= ORDER MODAL ================= */}
+     
       {selectedItem && (
         <div className="modal-overlay">
           <div className="modal">
