@@ -33,31 +33,33 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// ============================
-// LOGIN (Normal Users)
-// ============================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await db.select().from(users).where(eq(users.email, email));
 
     if (user.length === 0) return res.status(400).json({ message: "User not found" });
-
-    const isMatch = await bcrypt.compare(password, user[0].password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-
-    const token = jwt.sign(
-      { id: user[0].id, email: user[0].email, role: user[0].role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" } // Token validity
-    );
-
+    if (user[0].role === "admin")
+    {
+      const isMatch = (password === user[0].password);
+      if(!isMatch) return res.status(400).json({ message: "Invalid password" });
+    }
+    else
+    {
+      const isMatch = await bcrypt.compare(password, user[0].password);
+      if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+    }
+      const token = jwt.sign(
+        { id: user[0].id, email: user[0].email, role: user[0].role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1m" } // Token validity
+      );
     // Set auth cookie
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 1000 // 1 hour cookie
+      maxAge: 60 * 1000 // 1 minute cookie
     });
 
     res.json({ message: "Login successful", role: user[0].role });
@@ -96,32 +98,32 @@ router.post("/logout", (req, res) => {
 // ============================
 // ADMIN LOGIN
 // ============================
-router.post("/admin-login", async (req, res) => {
-  try {
-    const { email, name } = req.body;
-    const user = await db.select().from(users).where(eq(users.email, email));
+// router.post("/admin-login", async (req, res) => {
+//   try {
+//     const { email, name } = req.body;
+//     const user = await db.select().from(users).where(eq(users.email, email));
 
-    if (user.length === 0) return res.status(400).json({ message: "No such user" });
-    if (user[0].role !== "admin") return res.status(403).json({ message: "Not an admin" });
-    if (user[0].name !== name) return res.status(400).json({ message: "Name mismatch" });
+//     if (user.length === 0) return res.status(400).json({ message: "No such user" });
+//     if (user[0].role !== "admin") return res.status(403).json({ message: "Not an admin" });
+//     if (user[0].name !== name) return res.status(400).json({ message: "Name mismatch" });
 
-    const token = jwt.sign(
-      { id: user[0].id, email: user[0].email, role: user[0].role },
-      process.env.JWT_SECRET,
-      { expiresIn: "2h" }
-    );
+//     const token = jwt.sign(
+//       { id: user[0].id, email: user[0].email, role: user[0].role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "2h" }
+//     );
 
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 2 * 60 * 60 * 1000
-    });
+//     res.cookie("auth_token", token, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "strict",
+//       maxAge: 2 * 60 * 60 * 1000
+//     });
 
-    res.json({ message: "Admin login successful", role: user[0].role });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
+//     res.json({ message: "Admin login successful", role: user[0].role });
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// });
 
 export default router;
