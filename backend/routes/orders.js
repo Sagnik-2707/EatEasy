@@ -1,33 +1,36 @@
-// import express from "express";
-// import { db } from "../db/index.js";
-// import { order, orderItems } from "../db/schema.js";
-// import { eq } from "drizzle-orm";
-// import { adminAuth} from "../middleware/auth.js";
+import express from "express";
+import { db } from "../db/index.js";
+import { orders, orderItems, menuItems, users } from "../db/schema.js";
+import { eq } from "drizzle-orm";
 
-// const router = express.Router();
+const router = express.Router();
 
-// // router.post("/", async(req,res) => {
-// //     const {customerName, customerAddress, items} = req.body;
-// //     const[order] = await db.insert(order).values({customerName, customerAddress }).$returningId();
-// //     for(let item of items)
-// //     {
-// //         await db.insert(orderItems).values({
-// //             orderId: order.id,
-// //             menuItemId: item.menuItemId,
-// //             quantity: item.quantity
-// //         });
-// //     }
-// //         res.json({ message: "Order placed", orderId: order.id });
-// // });
+// Get all orders (with items and user info)
+router.get("/", async (req, res) => {
+  try {
+    const allOrders = await db
+      .select({
+        orderId: orders.id,
+        customerName: orders.customerName,
+        status: orders.status,
+        createdAt: orders.createdAt,
+        itemId: orderItems.id,
+        menuItemId: orderItems.menuItemId,
+        quantity: orderItems.quantity,
+        price: orderItems.price,
+        menuName: menuItems.name,
+        menuImage: menuItems.image,
+      })
+      .from(orders)
+      .leftJoin(orderItems, eq(orderItems.orderId, orders.id))
+      .leftJoin(menuItems, eq(menuItems.id, orderItems.menuItemId));
 
-// router.get("/", adminAuth, async(req, res) => {
-//     const allOrders = await db.select().from(order);
-//     res.json(allOrders);
-// });
+    res.json(allOrders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
 
-// router.put("/:id/status", adminAuth, async(req, res) => {
-//     const { status } = req.body;
-//     await db.update(order).set({status}.where(eq(order.id, Number(req.params.id))));
-// });
 
-// export default router;
+export default router;

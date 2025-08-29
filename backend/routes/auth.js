@@ -36,37 +36,38 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await db.select().from(users).where(eq(users.email, email));
+    const [user] = await db.select().from(users).where(eq(users.email, email));
 
-    if (user.length === 0) return res.status(400).json({ message: "User not found" });
-    if (user[0].role === "admin")
-    {
-      const isMatch = (password === user[0].password);
-      if(!isMatch) return res.status(400).json({ message: "Invalid password" });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    let isMatch;
+    if (user.role === "admin") {
+      isMatch = password === user.password;
+    } else {
+      isMatch = await bcrypt.compare(password, user.password);
     }
-    else
-    {
-      const isMatch = await bcrypt.compare(password, user[0].password);
-      if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-    }
-      const token = jwt.sign(
-        { id: user[0].id, email: user[0].email, role: user[0].role },
-        process.env.JWT_SECRET,
-        { expiresIn: "1m" } // Token validity
-      );
-    // Set auth cookie
+
+    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role , name: user.name },
+      process.env.JWT_SECRET,
+      { expiresIn: "3m" } // Token validity
+    );
+
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 1000 // 1 minute cookie
+      maxAge: 60 * 1000 * 3 // 3 minutes
     });
 
-    res.json({ message: "Login successful", role: user[0].role });
+    res.json({ message: "Login successful", role: user.role, name: user.name });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+
 
 // ============================
 // VERIFY USER (Check Cookie)
