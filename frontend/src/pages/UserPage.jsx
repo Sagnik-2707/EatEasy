@@ -40,6 +40,7 @@ function UserPage({ addOrder }) {
       );
 
       setUser(res.data); // Save user info
+
       setSuccess("Login successful!");
       setError("");
       setShowAuthModal(false);
@@ -53,29 +54,29 @@ function UserPage({ addOrder }) {
     }
   };
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/auth/me", {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
-    };
-    fetchUser();
-  }, []);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const res = await fetch("http://localhost:5000/api/auth/me", {
+  //         credentials: "include",
+  //       });
+  //       if (res.ok) {
+  //         const data = await res.json();
+  //         setUser(data);
+  //       } else {
+  //         setUser(null);
+  //       }
+  //     } catch {
+  //       setUser(null);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
 
   useEffect(() => {
   const fetchMenu = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/menus", {
+      const res = await fetch("http://localhost:5000/api/approved", {
         credentials: "include"
       });
       const data = await res.json();
@@ -89,13 +90,28 @@ function UserPage({ addOrder }) {
 }, []);
 
   const handleOrderClick = async (item) => {
-    if (!user) {
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/cart/add",
+      {
+        menuItemId: item.id,
+        quantity: 1,
+        price: item.price,
+      },
+      { withCredentials: true }
+    );
+
+    // If successful → order placed
+    setSelectedItem(item);
+  } catch (err) {
+    if (err.response?.status === 401) {
+      // Unauthorized → show login modal
       setShowAuthModal(true);
     } else {
-      setSelectedItem(item);
+      alert("Something went wrong!");
     }
-  };
-
+  }
+};
   const handleClose = () => {
     setSelectedItem(null);
     setFormData({ name: "", email: "", password: "", quantity: 1 });
@@ -109,30 +125,36 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-
     const res = await axios.post(
       "http://localhost:5000/api/cart/add",
       {
         menuItemId: selectedItem.id,
         quantity: formData.quantity,
-        price: selectedItem.price
+        price: selectedItem.price,
+        // image: selectedItem.image
       },
-      { withCredentials: true } 
+      { withCredentials: true }
     );
 
-    alert(`Order placed!\n\nItem: ${selectedItem.name}\nQuantity: ${formData.quantity}`);
-    addOrder(res.data.item); // update local state if needed
-    handleClose();
+    // Update parent/local state if needed
+    if (addOrder) {
+      addOrder(res.data); // assuming backend returns the created order
+    }
 
+    alert(`✅ Order placed!\n\nItem: ${selectedItem.name}\nQuantity: ${formData.quantity}`);
+
+    handleClose(); // close modal and reset form
   } catch (err) {
-    console.error(err);
-    alert("Failed to place order. Please try again.");
+    if (err.response?.status === 401) {
+      // not logged in → show login modal
+      setShowAuthModal(true);
+    } else {
+      console.error(err);
+      alert("❌ Failed to place order. Please try again.");
+    }
   }
 };
+
 
   return (
     <>
@@ -156,79 +178,183 @@ const handleSubmit = async (e) => {
       </div>
 
       {showAuthModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>{mode === "login" ? "Login" : "Register"}</h2>
+       <div
+  style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(0,0,0,0.5)", // overlay
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  }}
+>
+  <div
+    style={{
+      background: "#fff",
+      borderRadius: "20px",
+      padding: "40px 50px",
+      width: "400px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+      textAlign: "center",
+      fontFamily: "Arial, sans-serif",
+      animation: "fadeIn 0.3s ease-in-out",
+    }}
+  >
+    {/* Heading */}
+    <h2
+      style={{
+        marginBottom: "20px",
+        fontSize: "1.8rem",
+        fontWeight: "bold",
+        color: "#ff6f3c", // food vibe 🍔
+      }}
+    >
+      {mode === "login" ? "Welcome Back 👋" : "Join EatEasy 🍔"}
+    </h2>
 
-            {error && <p className="error">{error}</p>}
-            {success && <p className="success">{success}</p>}
+    {/* Error / Success */}
+    {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
+    {success && (
+      <p style={{ color: "green", marginBottom: "10px" }}>{success}</p>
+    )}
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            {mode === "register" && (
-              <input
-                type="text"
-                name="name"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            )}
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+    {/* Inputs */}
+    <input
+      type="email"
+      name="email"
+      placeholder="Enter your email"
+      value={formData.email}
+      onChange={handleChange}
+      required
+      style={{
+        width: "100%",
+        padding: "12px",
+        marginBottom: "15px",
+        borderRadius: "10px",
+        border: "1px solid #ddd",
+        fontSize: "1rem",
+      }}
+    />
+    {mode === "register" && (
+      <input
+        type="text"
+        name="name"
+        placeholder="Full Name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        style={{
+          width: "100%",
+          padding: "12px",
+          marginBottom: "15px",
+          borderRadius: "10px",
+          border: "1px solid #ddd",
+          fontSize: "1rem",
+        }}
+      />
+    )}
+    <input
+      type="password"
+      name="password"
+      placeholder="Enter your password"
+      value={formData.password}
+      onChange={handleChange}
+      required
+      style={{
+        width: "100%",
+        padding: "12px",
+        marginBottom: "20px",
+        borderRadius: "10px",
+        border: "1px solid #ddd",
+        fontSize: "1rem",
+      }}
+    />
 
-            <div className="modal-buttons">
-              {mode === "login" ? (
-                <button onClick={handleLogin}>Login</button>
-              ) : (
-                <button onClick={handleRegister}>Register</button>
-              )}
-              <button
-                className="cancel-btn"
-                onClick={() => setShowAuthModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
+    {/* Buttons */}
+    <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+      <button
+        onClick={mode === "login" ? handleLogin : handleRegister}
+        style={{
+          flex: 1,
+          padding: "12px",
+          background: "linear-gradient(90deg, #ff6f3c, #ff9a3c)",
+          color: "white",
+          border: "none",
+          borderRadius: "10px",
+          fontSize: "1rem",
+          fontWeight: "bold",
+          cursor: "pointer",
+          transition: "0.3s",
+        }}
+        onMouseOver={(e) => (e.target.style.opacity = "0.85")}
+        onMouseOut={(e) => (e.target.style.opacity = "1")}
+      >
+        {mode === "login" ? "Login" : "Register"}
+      </button>
+      <button
+        className="cancel-btn"
+        onClick={() => setShowAuthModal(false)}
+        style={{
+          flex: 1,
+          padding: "12px",
+          background: "#f4f4f4",
+          color: "#333",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          fontSize: "1rem",
+          cursor: "pointer",
+          transition: "0.3s",
+        }}
+        onMouseOver={(e) => {
+          e.target.style.background = "#eaeaea";
+        }}
+        onMouseOut={(e) => {
+          e.target.style.background = "#f4f4f4";
+        }}
+      >
+        Cancel
+      </button>
+    </div>
 
-            <p>
-              {mode === "login" ? (
-                <>
-                  New user?{" "}
-                  <span
-                    className="link"
-                    onClick={() => setMode("register")}
-                  >
-                    Create account
-                  </span>
-                </>
-              ) : (
-                <>
-                  Already have an account?{" "}
-                  <span
-                    className="link"
-                    onClick={() => setMode("login")}
-                  >
-                    Login
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-        </div>
+    {/* Switch Mode */}
+    <p style={{ fontSize: "0.9rem", color: "#555" }}>
+      {mode === "login" ? (
+        <>
+          New here?{" "}
+          <span
+            style={{
+              color: "#ff6f3c",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+            onClick={() => setMode("register")}
+          >
+            Create account
+          </span>
+        </>
+      ) : (
+        <>
+          Already a foodie?{" "}
+          <span
+            style={{
+              color: "#ff6f3c",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+            onClick={() => setMode("login")}
+          >
+            Login
+          </span>
+        </>
+      )}
+    </p>
+  </div>
+</div>
+
       )}
 
      

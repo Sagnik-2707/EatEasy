@@ -58,9 +58,9 @@ function AdminPage(props) {
       <Toolbar style={{ marginTop: "50PX" }} />
 
       <List>
-        {["Dashboard", "Menu"].map((text, index) => (
+        {["Dashboard", "Add to Menu"].map((text, index) => (
           <Link
-            to={text === "Dashboard" ? "/admin/dashboard" : text === "Menu" ? "/admin/menu" :"Nothing"}
+            to={text === "Dashboard" ? "/admin/dashboard" : text === "Add to Menu" ? "/admin/menu" :"Nothing"}
             onClick={() => handleLocation(text)}
           >
             <ListItem key={text} disablePadding>

@@ -50,7 +50,7 @@ const Menu = () => {
   };
   return (
     <>
-    <Box
+     <Box
       component="form"
       onSubmit={handleSubmit}
       sx={{

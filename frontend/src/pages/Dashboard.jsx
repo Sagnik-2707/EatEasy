@@ -1,24 +1,42 @@
 import React, { useEffect, useState } from "react";
 
-function Dashboard({ orders }) {
+function Dashboard() {
   const [menus, setMenus] = useState([]);
+  const [orders, setOrders] = useState([]);
 
-  // Fetch all menus for admin
+  // Fetch menus
   useEffect(() => {
-  const res = fetch("http://localhost:5000/api/menus")
-    .then(res => res.json())
-    .then(data => setMenus(data))
-    .catch(err => console.error("Failed to load menus", err));
-}, []);
+    fetch("http://localhost:5000/api/menus")
+      .then(res => res.json())
+      .then(data => setMenus(data))
+      .catch(err => console.error("Failed to load menus", err));
+  }, []);
 
+  // Fetch orders
+  useEffect(() => {
+    fetch("http://localhost:5000/api/orders")
+      .then(res => res.json())
+      .then(data => setOrders(data))
+      .catch(err => console.error("Failed to load orders", err));
+  }, []);
 
   // Approve menu
-  const approveMenu = async (id) => {
-    await fetch(`http://localhost:5000/api/menus/${id}/approve`, { method: "PATCH" });
-    setMenus(menus.map(m => m.id === id ? { ...m, status: "yes" } : m));
-  };
+  const toggleMenuStatus = async (id, currentStatus) => {
+  const newStatus = currentStatus === "yes" ? "no" : "yes";
 
-  // (Optional) Reject / Delete menu
+  await fetch(`http://localhost:5000/api/menus/${id}/approve`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: newStatus })
+  });
+
+  setMenus(menus.map(m => 
+    m.id === id ? { ...m, status: newStatus } : m
+  ));
+};
+
+
+  // Delete menu
   const deleteMenu = async (id) => {
     await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
     setMenus(menus.filter(m => m.id !== id));
@@ -32,35 +50,31 @@ function Dashboard({ orders }) {
       <h2>All Orders</h2>
       <br />
       {orders?.length === 0 ? (
-        <p>No Orders Yet</p>
+        <p>orders loading ...</p>
       ) : (
-        orders.map((order, index) => (
+      <div className="orders-container">
+        {orders.map((order, index) => (
           <div key={index} className="order-item">
             <div className="order-info">
-              <h3>
-                {order.item} - {order.quantity} pcs
-              </h3>
-              <p>By: {order.name}</p>
-              <p>Email: {order.email}</p>
-              <p>Time: {order.time}</p>
-              <div>
-                <button className="remove-btn">Remove</button>
-              </div>
-              <br />
+              <h3>{order.menuName} - {order.quantity} pcs</h3>
+              <p>By: {order.customerName}</p>
+              <p>Status: {order.status}</p>
+              <p>Time: {new Date(order.createdAt).toLocaleString()}</p>
+              <button className="remove-btn">Remove</button>
               <div className="total-amount">
-                <span>Total Amount:</span>
-                <span className="amount">
-                  ₹{order.price * order.quantity}
-                </span>
+                <span>Total:</span>
+                <span className="amount">₹{order.price * order.quantity}</span>
               </div>
             </div>
             <img
-              src={order.image}
-              alt={order.item}
+              src={`data:image/jpeg;base64,${order.menuImage}`}
+              alt={order.menuName}
               className="order-img"
             />
           </div>
-        ))
+        ))}
+      </div>
+
       )}
 
       <br /><hr /><br />
@@ -70,23 +84,23 @@ function Dashboard({ orders }) {
       {menus.length === 0 ? (
         <p>No Menus Found</p>
       ) : (
-        menus.map(menu => (
+       <div className="menus-container">
+        {menus.map(menu => (
           <div key={menu.id} className="menu-item">
             <div className="menu-info">
               <h3>{menu.name} - ₹{menu.price}</h3>
               <p>Status: {menu.status}</p>
               {menu.status === "no" ? (
-                <button onClick={() => approveMenu(menu.id)}>Approve</button>
+                <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>Approve</button>
               ) : (
-                <span>✅ Approved</span>
+                <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>Unapprove</button>
               )}
-              <button onClick={() => deleteMenu(menu.id)} style={{ marginLeft: "10px" }}>
-                Delete
-              </button>
+              <button onClick={() => deleteMenu(menu.id)}>Delete</button>
             </div>
-            
           </div>
-        ))
+        ))}
+      </div>
+
       )}
     </div>
   );
