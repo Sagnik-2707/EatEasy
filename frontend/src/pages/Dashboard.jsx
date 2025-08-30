@@ -5,7 +5,8 @@ function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [menuToDelete, setMenuToDelete] = useState(null);
-
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState(null);
   // Fetch menus
   useEffect(() => {
     fetch("http://localhost:5000/api/menus")
@@ -21,6 +22,14 @@ function Dashboard() {
       .then(data => setOrders(data))
       .catch(err => console.error("Failed to load orders", err));
   }, []);
+
+  const removeOrders = async (id) => {
+    await fetch(`http://localhost:5000/api/orders/remove/${id}`, { method: "DELETE"});
+     setOrders(orders.filter(o => o.orderId !== id));
+     setShowDeleteModal(false);
+     setOrderToDelete(null);
+  }
+  
 
   // Approve menu
   const toggleMenuStatus = async (id, currentStatus) => {
@@ -63,7 +72,16 @@ function Dashboard() {
                 <p>By: {order.customerName}</p>
                 <p>Status: {order.status}</p>
                 <p>Time: {new Date(order.createdAt).toLocaleString()}</p>
-                <button className="remove-btn">Remove</button>
+                <button 
+                  className="remove-btn"
+                  onClick={() => { 
+                        setShowDeleteModal(true); 
+                        setDeleteType("order"); 
+                        setOrderToDelete(order.orderId); 
+                      }}
+                      >
+                      Remove
+                      </button>
                 <div className="total-amount">
                   <span>Total:</span>
                   <span className="amount">₹{order.price * order.quantity}</span>
@@ -98,7 +116,13 @@ function Dashboard() {
                 ) : (
                   <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>Unapprove</button>
                 )}
-                <button onClick={() => { setShowDeleteModal(true); setMenuToDelete(menu.id); }}>Delete</button>
+                <button 
+                onClick={() => { 
+                setShowDeleteModal(true); 
+                setDeleteType("menu"); 
+                setMenuToDelete(menu.id); 
+                }}>
+                Delete</button>
               </div>
             </div>
           ))}
@@ -111,7 +135,15 @@ function Dashboard() {
           <div className="modal">
             <h3>Are you sure you want to delete?</h3>
             <div className="modal-buttons">
-              <button className="yes-btn" onClick={() => deleteMenu(menuToDelete)}>Yes</button>
+              <button 
+                className="yes-btn" 
+                onClick={() => {
+                    if (deleteType === "menu") {
+                      deleteMenu(menuToDelete);
+                    } else if (deleteType === "order") {
+                      removeOrders(orderToDelete);
+                    }
+                  }}>Yes</button>
               <button className="no-btn" onClick={() => setShowDeleteModal(false)}>No</button>
             </div>
           </div>

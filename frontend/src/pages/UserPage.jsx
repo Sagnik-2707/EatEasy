@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import "../App.css";
- // ✅ new external css
 
 function UserPage({ addOrder }) {
   const [menu, setMenu] = useState([]);
