@@ -1,6 +1,6 @@
 import express from "express";
 import { db } from "../db/index.js";
-import { orders, orderItems, menuItems, users } from "../db/schema.js";
+import { orders, orderItems, menuItems } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 const router = express.Router();
@@ -32,5 +32,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Delete an order (and its items)
+router.delete("/remove/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Step 1: Delete orderItems related to this order
+    await db.delete(orderItems).where(eq(orderItems.orderId, id));
+
+    // Step 2: Delete the order itself
+    const deletedOrder = await db.delete(orders).where(eq(orders.id, id)).returning();
+
+    if (deletedOrder.length === 0) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json({ message: "Order deleted successfully", deletedOrder });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete order" });
+  }
+});
 
 export default router;
