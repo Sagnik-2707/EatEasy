@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import menuRoutes from "./routes/menu.js";
 import authRoutes from "./routes/auth.js";
 import cartRoutes from "../backend/routes/cart.js"
-
+import orderRoutes from "../backend/routes/orders.js";
 import { authMiddleware, roleMiddleware } from "./middleware/auth.js";
 
 const app = express();
@@ -21,6 +21,6 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api", menuRoutes);
 app.use("/api/cart", cartRoutes);
-
+app.use("/api/orders", orderRoutes);
 
 app.listen(5000, () => console.log("Server running at http://localhost:5000"));
