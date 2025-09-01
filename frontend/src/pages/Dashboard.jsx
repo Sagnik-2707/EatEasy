@@ -48,6 +48,11 @@ function Dashboard() {
 
   // Delete menu
   const deleteMenu = async (id) => {
+    //  if (!res.ok) {
+    //   const err = await res.json();
+    //   alert(err.error); // ❌ Show message if menu is in pending order
+    //   return;
+    // }
     await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
     setMenus(menus.filter(m => m.id !== id));
     setShowDeleteModal(false);
