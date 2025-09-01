@@ -1,14 +1,13 @@
 import express from "express";
 import multer from "multer";
 import { db } from "../db/index.js";
-import { menuItems } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { orderItems, orders, menuItems } from "../db/schema.js";
+import { eq, and, notInArray } from "drizzle-orm";
 const router = express.Router();
 const upload = multer(); // stores file in memory
 
 
 router.get("/menus", async (req, res) => {
-  console.log("someones knocking")
   try{
     const items = await db.select().from(menuItems);
 
@@ -92,18 +91,47 @@ router.patch("/menus/:id/approve", async (req, res) => {
 
 // ❌ DELETE a menu
 router.delete("/menus/:id", async (req, res) => {
+  console.log("Hi");
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-    const [deleted] = await db.delete(menuItems)
-      .where(eq(menuItems.id, id))
-      .returning();
+    // 1. Check if there are pending orders for this menu
+    const pendingOrders = await db
+      .select()
+      .from(orderItems)
+      .innerJoin(orders, eq(orderItems.orderId, orders.id))
+      .where(
+        and(
+          eq(orderItems.menuItemId, id),
+          eq(orders.status, "pending")
+        )
+      );
+      console.log(1);
+    if (pendingOrders.length > 0) {
+      return res
+        .status(400)
+        .json({ error: "Cannot delete menu, it has active pending orders." });
+    }
 
-    if (!deleted) return res.status(404).json({ message: "Menu not found" });
+    // 2. Delete related orderItems first
+    await db.delete(orderItems).where(eq(orderItems.menuItemId, id));
+    console.log(2);
+    // 3. Optionally delete orphaned orders (those with no items left)
+    await db.delete(orders).where(
+      notInArray(
+        orders.id,
+        db.select(orderItems.orderId).from(orderItems) // keep orders still having items
+      )
+    );
+    console.log(3);
+    // 4. Finally delete the menu itself
+    await db.delete(menuItems).where(eq(menuItems.id, id));
 
-    res.json({ message: "Menu deleted", menu: deleted });
-  } catch (error) {
-    console.error(error);
+    res.json({ message: "Menu and related orders deleted successfully" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to delete menu" });
+    console.log(4);
   }
 });
 
