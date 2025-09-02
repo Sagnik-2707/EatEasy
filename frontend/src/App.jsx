@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import UserPage from "./pages/UserPage";
 import AdminPage from "./pages/AdminPage";
+import Navbar from "./components/Navbar";
 import "./App.css";
 
 import "@fontsource/roboto/300.css";
@@ -18,6 +19,7 @@ function App() {
   };
   return (
     <>
+      <Navbar/>
       <Routes>
         <Route path="/" element={<UserPage addOrder={addOrder} />} />
         <Route path="/admin/dashboard" element={<AdminPage orders={orders} />} />
