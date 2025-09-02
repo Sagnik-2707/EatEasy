@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import "../App.css";
 
 function Navbar() {
@@ -55,7 +56,7 @@ function Navbar() {
     <>
       {/* Navbar */}
       <nav className="navbar">
-        <div className="navbar-logo">🍔 EatEasy</div>
+        <Link to="/" div className="navbar-logo">🍔 EatEasy</Link>
         <div className="navbar-buttons">
           <button
             className="login-btn"
