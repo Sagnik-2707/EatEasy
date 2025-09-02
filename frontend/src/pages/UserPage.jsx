@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import Banner from "../components/Banner";
 import "../App.css";
 
 function UserPage({ addOrder }) {
@@ -109,7 +109,7 @@ function UserPage({ addOrder }) {
 
   return (
     <>
-
+      <Banner/>
       <div className="menu-grid">
         {menu?.map((item) => (
           <div key={item.id} className="menu-card">
