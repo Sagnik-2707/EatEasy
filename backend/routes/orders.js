@@ -36,12 +36,12 @@ router.get("/", async (req, res) => {
 router.delete("/remove/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
+    const orderId = parseInt(id, 10);
     // Step 1: Delete orderItems related to this order
-    await db.delete(orderItems).where(eq(orderItems.orderId, id));
+    await db.delete(orderItems).where(eq(orderItems.orderId, orderId));
 
     // Step 2: Delete the order itself
-    const deletedOrder = await db.delete(orders).where(eq(orders.id, id)).returning();
+    const deletedOrder = await db.delete(orders).where(eq(orders.id, orderId));
 
     if (deletedOrder.length === 0) {
       return res.status(404).json({ error: "Order not found" });

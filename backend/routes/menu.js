@@ -10,7 +10,7 @@ const upload = multer(); // stores file in memory
 router.get("/menus", async (req, res) => {
   try{
     const items = await db.select().from(menuItems);
-
+    
     const formatted = items.map(item => ({
       id:item.id, 
       name: item.name,
@@ -76,7 +76,7 @@ router.patch("/menus/:id/approve", async (req, res) => {
   try {
     const { id } = req.params;
     const [updated] = await db.update(menuItems)
-      .set({ status: "yes" })
+      .set({ status: req.body.status})
       .where(eq(menuItems.id, id))
       .returning();
 
@@ -90,9 +90,10 @@ router.patch("/menus/:id/approve", async (req, res) => {
 });
 
 // ❌ DELETE a menu
+// DELETE a menu safely
 router.delete("/menus/:id", async (req, res) => {
-  console.log("Hi");
   const { id } = req.params;
+  const menuId = parseInt(id, 10); // ✅ ensure it's a number
 
   try {
     // 1. Check if there are pending orders for this menu
@@ -102,37 +103,43 @@ router.delete("/menus/:id", async (req, res) => {
       .innerJoin(orders, eq(orderItems.orderId, orders.id))
       .where(
         and(
-          eq(orderItems.menuItemId, id),
+          eq(orderItems.menuItemId, menuId),
           eq(orders.status, "pending")
         )
       );
-      console.log(1);
+
     if (pendingOrders.length > 0) {
       return res
         .status(400)
-        .json({ error: "Cannot delete menu, it has active pending orders." });
+        .json({ error: "❌ Cannot delete menu, it has active pending orders." });
     }
 
     // 2. Delete related orderItems first
-    await db.delete(orderItems).where(eq(orderItems.menuItemId, id));
-    console.log(2);
-    // 3. Optionally delete orphaned orders (those with no items left)
-    await db.delete(orders).where(
-      notInArray(
-        orders.id,
-        db.select(orderItems.orderId).from(orderItems) // keep orders still having items
-      )
-    );
-    console.log(3);
-    // 4. Finally delete the menu itself
-    await db.delete(menuItems).where(eq(menuItems.id, id));
+    await db.delete(orderItems).where(eq(orderItems.menuItemId, menuId));
 
-    res.json({ message: "Menu and related orders deleted successfully" });
+    // 3. Find orphaned orders (orders with no items left)
+    const orphanOrders = await db
+      .select()
+      .from(orders)
+      .leftJoin(orderItems, eq(orderItems.orderId, orders.id));
+
+    const orphanOrderIds = orphanOrders
+      .filter(o => o.orderItems === null) // no items linked
+      .map(o => o.orders.id);
+
+    if (orphanOrderIds.length > 0) {
+      await db.delete(orders).where(eq(orders.id, orphanOrderIds));
+    }
+
+    // 4. Finally delete the menu itself
+    await db.delete(menuItems).where(eq(menuItems.id, menuId));
+
+    res.json({ message: "✅ Menu and related orders deleted successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Delete menu error:", err);
     res.status(500).json({ error: "Failed to delete menu" });
-    console.log(4);
   }
 });
+
 
 export default router;
