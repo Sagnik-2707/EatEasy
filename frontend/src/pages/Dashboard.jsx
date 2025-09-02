@@ -78,7 +78,7 @@ function Dashboard() {
       <h2>All Orders</h2>
       <br />
       {orders?.length === 0 ? (
-        <p>orders loading ...</p>
+        <p>No orders found</p>
       ) : (
         <div className="orders-container">
           {orders.map((order, index) => (
