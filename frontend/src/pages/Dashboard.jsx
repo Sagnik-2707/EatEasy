@@ -48,16 +48,27 @@ function Dashboard() {
 
   // Delete menu
   const deleteMenu = async (id) => {
-    //  if (!res.ok) {
-    //   const err = await res.json();
-    //   alert(err.error); // ❌ Show message if menu is in pending order
-    //   return;
-    // }
-    await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
+  try {
+    const res = await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to delete menu");
+      setShowDeleteModal(false);
+      setMenuToDelete(null);
+      return;
+    }
+
+    // ✅ Only update state if deletion succeeded
     setMenus(menus.filter(m => m.id !== id));
     setShowDeleteModal(false);
     setMenuToDelete(null);
-  };
+
+  } catch (err) {
+    console.error("Delete menu request failed:", err);
+    alert("Something went wrong while deleting menu");
+  }
+};
 
   return (
     <div className="admin-page">
