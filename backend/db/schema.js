@@ -1,11 +1,12 @@
-import { pgTable, serial, integer, varchar, text, numeric, timestamp, pgEnum 
- } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, varchar, text, numeric, timestamp, pgEnum } from "drizzle-orm/pg-core";
+
 export const statusEnum = pgEnum("status_enum", ["yes", "no"]);
+
 export const menuItems = pgTable("menu_items", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   price: numeric("price", 10, 2).notNull(),
-  image: text("image"), // <-- to store BLOB
+  image: text("image"),
   status: statusEnum("status").default("no").notNull()
 });
 
@@ -28,7 +29,11 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }), // optional if using only email+name
-  role: varchar("role", { length: 50 }).default("user")
-});
+  password: varchar("password", { length: 255 }), // null if OAuth user
+  role: varchar("role", { length: 50 }).default("user"),
 
+  // 🔑 New fields for OAuth
+  provider: varchar("provider", { length: 50 }), // e.g., "google", "github", "local"
+  providerId: varchar("provider_id", { length: 255 }), // the user ID from provider
+  createdAt: timestamp("created_at").defaultNow()
+});
