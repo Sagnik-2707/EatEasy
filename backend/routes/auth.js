@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
-
+import { passport } from "../config/passport.js";
 const router = express.Router();
 
 // ============================
@@ -126,5 +126,32 @@ router.post("/logout", (req, res) => {
 //     res.status(500).json({ message: "Server error", error: err.message });
 //   }
 // });
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"], session: false })
+);
 
+// Step 2: Google redirects back here
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login`, session: false }),
+  (req, res) => {
+    const user = req.user;
+
+    // Issue JWT (same as local login)
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+ res.redirect(`${process.env.FRONTEND_URL}/`);
+  }
+);
 export default router;
