@@ -43,6 +43,13 @@
       "when": 1756194857155,
       "tag": "0005_pink_ken_ellis",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1757185684097,
+      "tag": "0006_free_swarm",
+      "breakpoints": true
     }
   ]
 }
