@@ -191,6 +191,9 @@ function UserPage({ addOrder }) {
                 </>
               )}
             </p>
+            <div className="or">
+              <span>OR</span>
+            </div>
             <div className="google-login">
                 <button
                   onClick={() => {
