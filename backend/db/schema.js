@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, varchar, text, numeric, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, varchar, text, numeric, timestamp, pgEnum, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status_enum", ["yes", "no"]);
 
@@ -25,15 +25,22 @@ export const orderItems = pgTable("order_items", {
   price: integer("price").notNull()
 });
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }).notNull(),
-  password: varchar("password", { length: 255 }), // null if OAuth user
-  role: varchar("role", { length: 50 }).default("user"),
-
-  // 🔑 New fields for OAuth
-  provider: varchar("provider", { length: 50 }), // e.g., "google", "github", "local"
-  providerId: varchar("provider_id", { length: 255 }), // the user ID from provider
-  createdAt: timestamp("created_at").defaultNow()
-});
+export const users = pgTable(
+  "users",
+  {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 255 }).notNull().unique(),
+    name: varchar("name", { length: 255 }).notNull(),
+    password: varchar("password", { length: 255 }), // null if OAuth user
+    role: varchar("role", { length: 50 }).default("user"),
+    provider: varchar("provider", { length: 50 }), // "google", "github", "local"
+    providerId: varchar("provider_id", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({
+    providerProviderIdIdx: uniqueIndex("users_provider_providerId_idx").on(
+      t.provider,
+      t.providerId
+    ),
+  })
+);
