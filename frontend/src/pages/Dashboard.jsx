@@ -1,4 +1,9 @@
 import React, { useEffect, useState } from "react";
+import "../AdminPage.css";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import PeopleIcon from "@mui/icons-material/People";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 function Dashboard() {
   const [menus, setMenus] = useState([]);
@@ -7,16 +12,13 @@ function Dashboard() {
   const [menuToDelete, setMenuToDelete] = useState(null);
   const [orderToDelete, setOrderToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState(null);
-  // Fetch menus
+
   useEffect(() => {
     fetch("http://localhost:5000/api/menus")
       .then(res => res.json())
       .then(data => setMenus(data))
       .catch(err => console.error("Failed to load menus", err));
-  }, []);
 
-  // Fetch orders
-  useEffect(() => {
     fetch("http://localhost:5000/api/orders")
       .then(res => res.json())
       .then(data => setOrders(data))
@@ -24,143 +26,149 @@ function Dashboard() {
   }, []);
 
   const removeOrders = async (id) => {
-    await fetch(`http://localhost:5000/api/orders/remove/${id}`, { method: "DELETE"});
-     setOrders(orders.filter(o => o.orderId !== id));
-     setShowDeleteModal(false);
-     setOrderToDelete(null);
-  }
-  
+    await fetch(`http://localhost:5000/api/orders/remove/${id}`, { method: "DELETE" });
+    setOrders(orders.filter(o => o.orderId !== id));
+    setShowDeleteModal(false);
+  };
 
-  // Approve menu
   const toggleMenuStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "yes" ? "no" : "yes";
-
     await fetch(`http://localhost:5000/api/menus/${id}/approve`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify({ status: newStatus }),
     });
-
-    setMenus(menus.map(m => 
-      m.id === id ? { ...m, status: newStatus } : m
-    ));
+    setMenus(menus.map(m => (m.id === id ? { ...m, status: newStatus } : m)));
   };
 
-  // Delete menu
   const deleteMenu = async (id) => {
-  try {
-    const res = await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.error || "Failed to delete menu");
+    try {
+      const res = await fetch(`http://localhost:5000/api/menus/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setMenus(menus.filter(m => m.id !== id));
+      }
       setShowDeleteModal(false);
-      setMenuToDelete(null);
-      return;
+    } catch (err) {
+      console.error("Delete menu request failed:", err);
     }
+  };
 
-    // ✅ Only update state if deletion succeeded
-    setMenus(menus.filter(m => m.id !== id));
-    setShowDeleteModal(false);
-    setMenuToDelete(null);
-
-  } catch (err) {
-    console.error("Delete menu request failed:", err);
-    alert("Something went wrong while deleting menu");
-  }
-};
+  // ---------- KPI SUMMARY DATA ----------
+  const totalOrders = orders.length;
+  const pendingOrders = orders.filter(o => o.status === "Pending").length;
+  const approvedMenus = menus.filter(m => m.status === "yes").length;
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.price * o.quantity), 0);
 
   return (
-    <div className="admin-page">
-      <h1>Admin Dashboard</h1>
+    <div className="dashboard">
+      {/* ---------- SUMMARY CARDS ---------- */}
+      <div className="summary-cards">
+        <div className="summary-card">
+          <div className="icon-box"><ShoppingCartIcon /></div>
+          <div className="card-info">
+            <h4>Total Orders</h4>
+            <p>{totalOrders}</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="icon-box"><RestaurantMenuIcon /></div>
+          <div className="card-info">
+            <h4>Total Menus</h4>
+            <p>{menus.length}</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="icon-box"><PeopleIcon /></div>
+          <div className="card-info">
+            <h4>Approved Menus</h4>
+            <p>{approvedMenus}</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="icon-box"><TrendingUpIcon /></div>
+          <div className="card-info">
+            <h4>Total Revenue</h4>
+            <p>₹{totalRevenue}</p>
+          </div>
+        </div>
+      </div>
 
       {/* ---------- ORDERS SECTION ---------- */}
       <h2>All Orders</h2>
-      <br />
-      {orders?.length === 0 ? (
-        <p>No orders found</p>
-      ) : (
-        <div className="orders-container">
-          {orders.map((order, index) => (
-            <div key={index} className="order-item">
-              <div className="order-info">
+      <div className="card-grid">
+        {orders.length === 0 ? (
+          <p>No orders found</p>
+        ) : (
+          orders.map((order, index) => (
+            <div key={index} className="card">
+              <img src={`data:image/jpeg;base64,${order.menuImage}`} alt={order.menuName} />
+              <div className="card-content">
                 <h3>{order.menuName} - {order.quantity} pcs</h3>
                 <p>By: {order.customerName}</p>
-                <p>Status: {order.status}</p>
-                <p>Time: {new Date(order.createdAt).toLocaleString()}</p>
-                <button 
-                  className="remove-btn"
-                  onClick={() => { 
-                        setShowDeleteModal(true); 
-                        setDeleteType("order"); 
-                        setOrderToDelete(order.orderId); 
-                      }}
-                      >
-                      Remove
-                      </button>
-                <div className="total-amount">
-                  <span>Total:</span>
-                  <span className="amount">₹{order.price * order.quantity}</span>
+                <p>Status: <span className={`status ${order.status}`}>{order.status}</span></p>
+                <p>{new Date(order.createdAt).toLocaleString()}</p>
+                <div className="card-footer">
+                  <span className="price">₹{order.price * order.quantity}</span>
+                  <button
+                    className="danger"
+                    onClick={() => { setShowDeleteModal(true); setDeleteType("order"); setOrderToDelete(order.orderId); }}
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
-              <img
-                src={`data:image/jpeg;base64,${order.menuImage}`}
-                alt={order.menuName}
-                className="order-img"
-              />
             </div>
-          ))}
-        </div>
-      )}
-
-      <br /><hr /><br />
+          ))
+        )}
+      </div>
 
       {/* ---------- MENUS SECTION ---------- */}
       <h2>Menus Pending Approval</h2>
-      <br />
-      {menus.length === 0 ? (
-        <p>No Menus Found</p>
-      ) : (
-        <div className="menus-container">
-          {menus.map(menu => (
-            <div key={menu.id} className="menu-item">
-              <div className="menu-info">
+      <div className="card-grid">
+        {menus.length === 0 ? (
+          <p>No menus found</p>
+        ) : (
+          menus.map(menu => (
+            <div key={menu.id} className="card">
+              <div className="card-content">
                 <h3>{menu.name} - ₹{menu.price}</h3>
                 <p>Status: {menu.status}</p>
-                {menu.status === "no" ? (
-                  <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>Approve</button>
-                ) : (
-                  <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>Unapprove</button>
-                )}
-                <button 
-                onClick={() => { 
-                setShowDeleteModal(true); 
-                setDeleteType("menu"); 
-                setMenuToDelete(menu.id); 
-                }}>
-                Delete</button>
+                <div className="card-footer">
+                  <button onClick={() => toggleMenuStatus(menu.id, menu.status)}>
+                    {menu.status === "no" ? "Approve" : "Unapprove"}
+                  </button>
+                  <button
+                    className="danger"
+                    onClick={() => { setShowDeleteModal(true); setDeleteType("menu"); setMenuToDelete(menu.id); }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
-      {/* ---------- DELETE CONFIRMATION MODAL ---------- */}
+      {/* ---------- DELETE MODAL ---------- */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Are you sure you want to delete?</h3>
-            <div className="modal-buttons">
-              <button 
-                className="yes-btn" 
+            <div className="modal-actions">
+              <button
+                className="danger"
                 onClick={() => {
-                    if (deleteType === "menu") {
-                      deleteMenu(menuToDelete);
-                    } else if (deleteType === "order") {
-                      removeOrders(orderToDelete);
-                    }
-                  }}>Yes</button>
-              <button className="no-btn" onClick={() => setShowDeleteModal(false)}>No</button>
+                  if (deleteType === "menu") deleteMenu(menuToDelete);
+                  if (deleteType === "order") removeOrders(orderToDelete);
+                }}
+              >
+                Yes
+              </button>
+              <button onClick={() => setShowDeleteModal(false)}>No</button>
             </div>
           </div>
         </div>
