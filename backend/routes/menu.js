@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { db } from "../db/index.js";
-import { orderItems, orders, menuItems } from "../db/schema.js";
+import { orderItems, orders, menuItems, restaurants } from "../db/schema.js";
 import { eq, and, notInArray } from "drizzle-orm";
 const router = express.Router();
 const upload = multer(); // stores file in memory
@@ -51,26 +51,43 @@ router.get("/approved", async (req, res) => {
 });
 
 // POST /menus
-router.post("/menus", upload.single("image"), async (req, res) => {
-  try {
-    const { menuName, price } = req.body;
-   const imageBase64 = req.file ? req.file.buffer.toString("base64") : null;
+router.post(
+  "/",
+  authMiddleware,
+  requireRole("restaurant_admin"),
+  upload.single("image"), 
+  async (req, res) => {
+    try 
+    {
+      const { name, price } = req.body;
+      const imageBase64 = req.file ? req.file.buffer.toString("base64") : null;
 
-    const [item] = await db
-      .insert(menuItems)
-      .values({
-        name: menuName,
-        price: price,
-        image: imageBase64, 
-      })
-      .returning();
+      const restaurant = await db.query.restaurants.findFirst({
+        where: eq(restaurants.adminId, req.user.id),
+      });
 
-    res.json({ message: "Menu item added", item });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to add menu item" });
+      if (!restaurant) {
+        return res.status(403).json({ message: "No restaurant assigned" });
+      }
+
+      const [newMenuItem] = await db
+        .insert(menuItems)
+        .values({
+          restaurantId: restaurant.id,
+          name,
+          price,
+          image: imageBase64, // stored as base64 string
+        })
+        .returning();
+
+      res.json({ message: "Menu item added", item: newMenuItem });
+    } 
+    catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to add menu item" });
+    }
   }
-});
+);
 
 router.patch("/menus/:id/approve", async (req, res) => {
   try {

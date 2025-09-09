@@ -50,6 +50,13 @@
       "when": 1757185684097,
       "tag": "0006_free_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1757402108714,
+      "tag": "0007_quiet_raza",
+      "breakpoints": true
     }
   ]
 }
