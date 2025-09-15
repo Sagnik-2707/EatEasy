@@ -11,7 +11,6 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
-// ---------------- ENUMS ----------------
 export const roleEnum = pgEnum("role_enum", [
   "super_admin",
   "restaurant_admin",
@@ -27,6 +26,7 @@ export const orderStatusEnum = pgEnum("order_status_enum", [
   "delivered",
   "cancelled",
 ]);
+export const restaurantStatusEnum = pgEnum("restaurant_status_enum", ["yes", "no"]);
 
 export const statusEnum = pgEnum("status_enum", ["yes", "no"]);
 
@@ -51,7 +51,6 @@ export const users = pgTable(
   })
 );
 
-// ---------------- RESTAURANTS ----------------
 export const restaurants = pgTable("restaurants", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -60,9 +59,9 @@ export const restaurants = pgTable("restaurants", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }), // ✅ each restaurant has an admin
   createdAt: timestamp("created_at").defaultNow(),
+  status: restaurantStatusEnum("status").default("no").notNull()
 });
 
-// ---------------- DELIVERY BOYS ----------------
 export const deliveryBoys = pgTable("delivery_boys", {
   id: integer("id")
     .primaryKey()
@@ -83,7 +82,6 @@ export const menuItems = pgTable("menu_items", {
   status: statusEnum("status").default("no").notNull(),
 });
 
-// ---------------- ORDERS ----------------
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
   customerName: varchar("customer_name", { length: 255 }).notNull(), // ✅ unchanged
@@ -96,7 +94,6 @@ export const orders = pgTable("orders", {
   deliveryBoyId: integer("delivery_boy_id").references(() => users.id, { onDelete: "set null" }),
 });
 
-// ---------------- ORDER ITEMS ----------------
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id")
@@ -108,3 +105,4 @@ export const orderItems = pgTable("order_items", {
   quantity: integer("quantity").notNull(),
   price: integer("price").notNull(), // ✅ unchanged
 });
+
